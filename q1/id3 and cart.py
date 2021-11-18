@@ -1,70 +1,37 @@
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-import sklearn.metrics as met 
-from sklearn import preprocessing
+from sklearn.metrics import confusion_matrix,accuracy_score,recall_score,f1_score,precision_score
 
-cancer = pd.read_csv('breast-cancer.data',sep=",") 
-df = pd.DataFrame(cancer)
-df.head()
+data = pd.read_csv('breast-cancer.data') 
 
-le = preprocessing.LabelEncoder()
-id3_model = DecisionTreeClassifier(criterion = 'entropy') 
-cart_model = DecisionTreeClassifier(criterion = 'gini') 
+id3 = DecisionTreeClassifier(criterion="entropy")
+cart = DecisionTreeClassifier(criterion="gini")
+encoder = OneHotEncoder(drop="first")
 
-X = df.iloc[:,:-1].values
-Y = df.iloc[:,-1].values
+encoder.fit(data)
+tf_df = pd.DataFrame(encoder.transform(data).toarrayray())
 
-for i in range(9): 
-    le.fit(list(set(df.iloc[:,i].values))) 
-    a =[]
-    for j in range(len(X)): 
-        a.append(X[j][i])
-        
-    a = le.transform(a)
-    
-    for j in range(len(X)): 
-        X[j][i] = a[j]
-        
-le.fit(list(set(df.iloc[:,-1].values))) 
+X = tf_df.iloc[:,:-1]
+y = tf_df.iloc[:,-1]
+x_train,x_test,y_train,y_test = train_test_split(X,y,test_size = 0.3)
 
-a =[]
-
-for j in range(len(X)): 
-    a.append(Y[j])
-    
-a = le.transform(a)
-
-for j in range(len(X)): 
-    Y[j] = a[j]
-    
-print(X)  
-print(Y) 
-
-Y=Y.astype('int')
-
-Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size =int(0.1*len(Y)), random_state = 1)
-print(Xtrain) 
-print(Ytrain)
-
-
-id3_model_trained = id3_model.fit(Xtrain,Ytrain) 
-cart_model_trained = cart_model.fit(Xtrain,Ytrain) 
-Ypredict_cart = cart_model_trained.predict(Xtest) 
-Ypredict_id3 = id3_model_trained.predict(Xtest)
-
+id3.fit(x_train,y_train)
+cart.fit(x_train,y_train)
+y_pred_id3 = id3.predict(x_test)
+y_pred_cart = cart.predict(x_test)
 
 print("ID3 Tree Metrics")
-print("Accuracy = ", met.accuracy_score(Ytest, Ypredict_id3))
-print("Error Rate = ",1-met.accuracy_score(Ytest, Ypredict_id3))
-print("Recall = ",met.recall_score(Ytest, Ypredict_id3,average ='weighted')) 
-print("Precision = ",met.precision_score(Ytest,Ypredict_id3,average = 'weighted')) 
-print("F-Measure = ",met.f1_score(Ytest, Ypredict_id3,average = 'weighted'))
-
-
+accuracy_score(y_test,y_pred_id3)
+recall_score(y_test,y_pred_id3)
+precision_score(y_test,y_pred_id3)
+f1_score(y_test,y_pred_id3)
+confusion_matrix(y_test,y_pred_id3)
 
 print("CART Tree Metrics")
-print("Accuracy = ", met.accuracy_score(Ytest, Ypredict_cart))
-print("Error Rate = ",1-met.accuracy_score(Ytest, Ypredict_cart))
-print("Recall = ",met.recall_score(Ytest, Ypredict_cart,average ='weighted'))
-print("Precision = ",met.precision_score(Ytest,Ypredict_cart,average = 'weighted'))
+accuracy_score(y_test,y_pred_cart)
+recall_score(y_test,y_pred_cart)
+precision_score(y_test,y_pred_cart)
+f1_score(y_test,y_pred_cart)
+confusion_matrix(y_test,y_pred_cart)
